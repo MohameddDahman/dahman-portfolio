@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, Inter, Geist } from "next/font/google";
 import "./globals.css";
+import { ConvexClientProvider } from "@/components/web/ConvexClientProvider";
+import { cn } from "@/lib/utils";
+import Navbar from "@/components/web/Navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
+  variable: "--font-heading",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
   subsets: ["latin"],
+  variable: "--font-body",
 });
 
 export const metadata: Metadata = {
@@ -25,9 +31,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", spaceGrotesk.variable, inter.variable, "font-sans", geist.variable)}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className=" bg-[#0a0a0a] text-white min-h-full flex flex-col">
+         <Navbar />
+        <ConvexClientProvider>{children}</ConvexClientProvider></body>
     </html>
   );
 }
