@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full", "antialiased", spaceGrotesk.variable, inter.variable, "font-sans", geist.variable)}
     >
-      <body className=" bg-[#0a0a0a] text-white min-h-full flex flex-col">
+      <body className="bg-[#0a0a0a] text-white min-h-full flex flex-col">
          <Navbar />
         <ConvexClientProvider>{children}</ConvexClientProvider></body>
     </html>

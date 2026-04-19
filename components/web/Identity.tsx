@@ -2,7 +2,7 @@ import TerminalHero from "./TerminalHero";
 
 export default function Identity() {
   return (
-    <section className="px-6 md:px-20 min-h-[90vh] bg-[#101010] flex flex-col md:flex-row justify-center md:justify-between items-center gap-12 py-16 md:py-0">
+    <section className=" overflow-hidden px-6 md:px-20 min-h-[90vh] bg-[#101010] flex flex-col md:flex-row justify-center md:justify-between items-center gap-12 py-16 md:py-0">
       <div className="w-full md:w-96">
         <span className="mb-7 inline-block border border-[#333] text-[#888] text-[11px] tracking-widest uppercase px-3 py-1 rounded-full">
           Identity
