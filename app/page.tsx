@@ -14,7 +14,7 @@ export default function Home() {
 
   return (
     <main>
-      <section className="px-6 md:px-20 flex min-h-[85vh] items-center">
+      <section className="px-6 md:px-20 flex min-h-[85vh] items-center overflow-hidden">
         <div>
           <motion.h1 style={{ x }} className="text-6xl md:text-9xl font-heading">
             DAHMAN
