@@ -70,9 +70,10 @@ export default async function ProjectPage({ params }: Params) {
       </header>
 
       {/* ---- Outcomes ---------------------------------------------------
-          Hidden while the entry is a draft. A results strip full of
-          em-dashes is worse than no results strip. */}
-      {!project.draft && (
+          Only rendered when there is something real to put in it. A
+          results strip full of em-dashes is worse than no strip at all,
+          and a finished write-up can legitimately have no numbers yet. */}
+      {project.outcomes.length > 0 && (
         <section className="shell py-[6vh]">
           <RiseGroup className="grid grid-cols-1 gap-6 sm:grid-cols-3" stagger={0.08}>
             {project.outcomes.map((o) => (
