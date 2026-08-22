@@ -2,13 +2,16 @@ import type { WorldId } from "@/lib/worlds";
 
 /**
  * ---------------------------------------------------------------------
- *  REPLACE THESE WITH YOUR REAL PROJECTS.
+ *  Projects.
  *
- *  Every entry is a placeholder. While `draft` is true, the rail row and
- *  the case-study page both show a visible marker, so nothing here can be
- *  mistaken for real work if the site ships before you have filled it in.
- *  Set `draft: false` once an entry describes something you actually
- *  built.
+ *  `draft: true` puts a visible "Placeholder" marker on the rail row and
+ *  the case-study page, so an entry that has not been written yet can
+ *  never be mistaken for finished work on a live site. Flip it to false
+ *  once the copy below describes what you actually did.
+ *
+ *  Jamora Vibes and Reem Store are real projects with placeholder copy:
+ *  the names and slugs are right, everything narrative still needs your
+ *  facts. Anything marked "TODO" is a prompt, not a claim.
  *
  *  `world` picks which of the seven 3D environments stands behind the
  *  project's page — see lib/worlds.ts.
@@ -35,90 +38,108 @@ export type Project = {
 };
 
 export const PROJECTS: Project[] = [
+  /* ------------------------------------------------------------------ *
+   *  REAL PROJECTS — names confirmed, copy still to write.
+   * ------------------------------------------------------------------ */
   {
-    slug: "first-project",
-    title: "First project",
-    role: "Design & build",
-    year: "2025",
-    world: "neon",
-    summary: "One line on the problem and the result. Concrete beats impressive.",
+    slug: "jamora-vibes",
+    title: "Jamora Vibes",
+    role: "Website", // TODO: your actual role, e.g. "Design & build"
+    year: "2025", // TODO: confirm
+    world: "tide",
+    summary: "A website for Jamora Vibes.",
     chapters: [
       {
-        heading: "The situation",
+        heading: "The brief",
         body: [
-          "Open with who it was for, what they had before, and what was actually going wrong. Two or three sentences is plenty — the reader is deciding whether to keep going.",
-          "Name the constraint that shaped everything else. A deadline, a legacy API, a device you were not allowed to drop. Constraints are the most interesting thing on a case-study page and almost nobody writes them down.",
+          "TODO — who Jamora Vibes are, what they needed a site for, and what they had before this one.",
+          "TODO — the constraint that shaped the build. A launch date, a budget, a brand kit you had to work inside, a client who needed to update it themselves.",
         ],
       },
       {
         heading: "What I built",
         body: [
-          "Describe the thing in the words its users would use, not in the words its repository uses.",
-          "Then the part you are actually proud of: the decision that was not obvious, and what you chose against.",
+          "TODO — describe the site in the words a visitor would use, not the words the repo uses. Pages, key interactions, anything custom.",
+          "TODO — the part that was genuinely hard, and the approach you picked over the obvious one.",
         ],
       },
       {
-        heading: "What changed",
+        heading: "Result",
         body: [
-          "Close with a measurement. A load time, a conversion, a support ticket that stopped arriving, a task that used to take an hour. A number beats an adjective every single time.",
+          "TODO — what changed. Traffic, enquiries, a load time, a task the client used to pay someone else to do. A number beats an adjective.",
         ],
       },
     ],
-    stack: ["Next.js", "TypeScript", "Tailwind", "Vercel"],
+    // Empty until confirmed — the "Built with" block hides itself rather
+    // than listing a stack I guessed at.
+    stack: [], // TODO: real stack
     facts: [
-      ["Client", "Add the client, or Personal"],
-      ["Duration", "e.g. Six weeks"],
-      ["Team", "e.g. Solo"],
-      ["Scope", "Design, build, deploy"],
+      ["Client", "Jamora Vibes"],
+      ["Type", "Website"],
+      // Rows with an empty value are dropped, so these stay invisible
+      // until they are filled in.
+      ["Duration", ""],
+      ["Team", ""],
+      ["Scope", ""],
     ],
     outcomes: [
-      { value: "00%", label: "Replace with a real number" },
-      { value: "0.0s", label: "Replace with a real number" },
-      { value: "0×", label: "Replace with a real number" },
+      { value: "—", label: "TODO — a real number" },
+      { value: "—", label: "TODO — a real number" },
+      { value: "—", label: "TODO — a real number" },
     ],
+    // live: "https://…",   TODO — add the URL and this becomes a button
     draft: true,
   },
   {
-    slug: "second-project",
-    title: "Second project",
-    role: "Frontend engineering",
-    year: "2025",
-    world: "tide",
-    summary: "Name the hard part. That is the line people actually read.",
+    slug: "reem-store",
+    title: "Reem Store",
+    role: "Online store", // TODO: your actual role
+    year: "2025", // TODO: confirm
+    world: "lattice",
+    summary: "An online storefront for Reem Store.",
     chapters: [
       {
-        heading: "The situation",
+        heading: "The brief",
         body: [
-          "What the product does and who it is for.",
-          "The state it was in when you arrived.",
+          "TODO — what Reem Store sells, who buys it, and how they were selling before.",
+          "TODO — the constraint. Payments in a particular region, a catalogue size, stock that changes daily, a client updating products from a phone.",
         ],
       },
       {
-        heading: "The hard part",
+        heading: "What I built",
         body: [
-          "Every project has one. Realtime sync, an offline mode, a table with fifty thousand rows, a form nobody could finish.",
-          "Say what you tried first and why it did not hold. Being honest about a dead end reads as experience, not weakness.",
+          "TODO — the storefront itself: catalogue, product pages, cart, checkout, whatever you actually owned. Say where the product data lives and who edits it.",
+          "TODO — the hard part. Commerce always has one — variants, stock sync, a payment provider, or making a long catalogue feel fast.",
         ],
       },
       {
-        heading: "What changed",
-        body: ["The measured outcome, and how you measured it."],
+        heading: "Result",
+        body: [
+          "TODO — orders, conversion, page speed, or the manual job it replaced.",
+        ],
       },
     ],
-    stack: ["React", "Convex", "Realtime", "Zod"],
+    stack: [], // TODO: real stack
     facts: [
-      ["Client", "Add the client, or Personal"],
-      ["Duration", "e.g. Three months"],
-      ["Team", "e.g. Two engineers"],
-      ["Scope", "Frontend, data layer"],
+      ["Client", "Reem Store"],
+      ["Type", "E-commerce storefront"],
+      ["Duration", ""],
+      ["Team", ""],
+      ["Scope", ""],
     ],
     outcomes: [
-      { value: "00ms", label: "Replace with a real number" },
-      { value: "00%", label: "Replace with a real number" },
-      { value: "0k", label: "Replace with a real number" },
+      { value: "—", label: "TODO — a real number" },
+      { value: "—", label: "TODO — a real number" },
+      { value: "—", label: "TODO — a real number" },
     ],
+    // live: "https://…",   TODO
     draft: true,
   },
+
+  /* ------------------------------------------------------------------ *
+   *  PLACEHOLDERS — delete these as real projects replace them. The rail
+   *  wraps, so any count works; six or more keeps it feeling continuous.
+   * ------------------------------------------------------------------ */
   {
     slug: "third-project",
     title: "Third project",
@@ -137,7 +158,7 @@ export const PROJECTS: Project[] = [
         heading: "The system",
         body: [
           "Describe the system rather than the screens: the tokens, the primitives, the rules that let other people keep building after you left.",
-          "Say how you handled the parts systems usually get wrong — density, dark mode, focus order, and what happens when a label is three words longer in German.",
+          "Say how you handled the parts systems usually get wrong — density, dark mode, focus order, and what happens when a label is three words longer in another language.",
         ],
       },
       {
@@ -206,7 +227,7 @@ export const PROJECTS: Project[] = [
     title: "Fifth project",
     role: "Performance",
     year: "2024",
-    world: "lattice",
+    world: "orbit",
     summary: "A before and after number is worth a paragraph of adjectives.",
     chapters: [
       {
@@ -246,7 +267,7 @@ export const PROJECTS: Project[] = [
     title: "Sixth project",
     role: "Full build",
     year: "2024",
-    world: "orbit",
+    world: "neon",
     summary: "Keep the oldest entry short. It is here for shape, not detail.",
     chapters: [
       {

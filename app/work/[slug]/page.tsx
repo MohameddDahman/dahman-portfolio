@@ -69,27 +69,52 @@ export default async function ProjectPage({ params }: Params) {
         <div className="rule mt-10" />
       </header>
 
-      {/* ---- Outcomes --------------------------------------------------- */}
-      <section className="shell py-[6vh]">
-        <RiseGroup className="grid grid-cols-1 gap-6 sm:grid-cols-3" stagger={0.08}>
-          {project.outcomes.map((o) => (
-            <div key={o.label} data-rise>
-              <div
-                className="t-display text-[clamp(1.7rem,3vw,2.4rem)]"
-                style={{ color: "var(--accent)" }}
-              >
-                {o.value}
+      {/* ---- Outcomes ---------------------------------------------------
+          Hidden while the entry is a draft. A results strip full of
+          em-dashes is worse than no results strip. */}
+      {!project.draft && (
+        <section className="shell py-[6vh]">
+          <RiseGroup className="grid grid-cols-1 gap-6 sm:grid-cols-3" stagger={0.08}>
+            {project.outcomes.map((o) => (
+              <div key={o.label} data-rise>
+                <div
+                  className="t-display text-[clamp(1.7rem,3vw,2.4rem)]"
+                  style={{ color: "var(--accent)" }}
+                >
+                  {o.value}
+                </div>
+                <div className="t-label mt-2 max-w-[22ch]">{o.label}</div>
               </div>
-              <div className="t-label mt-2 max-w-[22ch]">{o.label}</div>
-            </div>
-          ))}
-        </RiseGroup>
-      </section>
+            ))}
+          </RiseGroup>
+        </section>
+      )}
 
       {/* ---- Case study ------------------------------------------------- */}
       <section className="shell grid gap-14 py-[6vh] lg:grid-cols-[1.25fr_0.75fr] lg:gap-20">
         <div className="space-y-16">
-          {project.chapters.map((ch, ci) => (
+          {/* A draft shows an honest note instead of its scaffolding. The
+              project is real and belongs in the list; the write-up simply
+              is not finished, and saying so is better than printing the
+              prompts I left myself. */}
+          {project.draft ? (
+            <div className="panel p-8 md:p-10">
+              <span className="t-label">Write-up in progress</span>
+              <p className="t-body mt-4 max-w-[52ch]">
+                The case study for this one is not written up yet. What is
+                here is accurate; there is just more of it to come.
+              </p>
+              <Link
+                href="/contact"
+                data-cursor="Ask"
+                className="t-label group mt-8 inline-flex items-center gap-2 transition-colors duration-400 hover:text-white"
+              >
+                Ask me about it directly
+                <span className="transition-transform duration-400 group-hover:translate-x-1">→</span>
+              </Link>
+            </div>
+          ) : (
+          project.chapters.map((ch, ci) => (
             <div key={ch.heading}>
               <div className="mb-5 flex items-baseline gap-3">
                 <span className="t-mono text-[10px] text-w40">
@@ -113,14 +138,16 @@ export default async function ProjectPage({ params }: Params) {
                 ))}
               </div>
             </div>
-          ))}
+          )))}
         </div>
 
         <aside>
           <Parallax speed={0.05}>
             <Panel className="p-7">
               <dl className="relative">
-                {project.facts.map(([k, v]) => (
+                {project.facts
+                  .filter(([, v]) => v.trim().length > 0)
+                  .map(([k, v]) => (
                   <div
                     key={k}
                     className="flex items-baseline justify-between gap-6 border-b border-w08 py-3 last:border-0"
@@ -131,6 +158,7 @@ export default async function ProjectPage({ params }: Params) {
                 ))}
               </dl>
 
+              {project.stack.length > 0 && (
               <div className="relative mt-7">
                 <div className="t-label mb-3">Built with</div>
                 <ul className="flex flex-wrap gap-2">
@@ -144,6 +172,7 @@ export default async function ProjectPage({ params }: Params) {
                   ))}
                 </ul>
               </div>
+              )}
 
               {(project.live || project.source) && (
                 <div className="relative mt-7 flex flex-wrap gap-3">
