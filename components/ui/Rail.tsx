@@ -187,6 +187,15 @@ export default function Rail() {
   );
 }
 
+/**
+ * A rail row.
+ *
+ * The card is an <article>, not a link. The title carries the link to the
+ * case study and stretches an ::after over the whole card, which is what
+ * lets a second, separate link to the live site live inside the same card
+ * — nesting one <a> inside another is invalid, and browsers resolve it by
+ * dropping one of them.
+ */
 function Row({
   project,
   index,
@@ -199,10 +208,8 @@ function Row({
   const world = WORLDS[project.world];
 
   return (
-    <Link
-      href={"/work/" + project.slug}
-      data-cursor="Open"
-      className="panel panel-live group relative block overflow-hidden px-6 py-6 md:px-9 md:py-8"
+    <article
+      className="panel panel-live group relative overflow-hidden px-6 py-6 md:px-9 md:py-8"
       onPointerMove={(e) => {
         const el = e.currentTarget;
         const r = el.getBoundingClientRect();
@@ -214,6 +221,16 @@ function Row({
     >
       <span className="rim" />
       <span className="sheen" />
+
+        {/* Covers the whole card, padding included. The visible title is
+            plain text; this carries the link and its accessible name. */}
+        <Link
+          href={"/work/" + project.slug}
+          data-cursor="Read"
+          className="absolute inset-0 z-10"
+        >
+          <span className="sr-only">{project.title} — read the case study</span>
+        </Link>
 
       <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:gap-9">
         <span
@@ -235,14 +252,12 @@ function Row({
           <p className="t-body mt-2 max-w-[48ch] text-[13.5px]">{project.summary}</p>
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="relative z-20 flex shrink-0 flex-wrap items-center gap-2">
           {project.draft && (
             <span className="border border-w20 px-2.5 py-1">
               <span className="t-label text-[8px]">Placeholder</span>
             </span>
           )}
-          {/* Which world the case study opens into — a small promise about
-              where the next click takes you. */}
           <span
             className="t-label border px-2.5 py-1 text-[8px]"
             style={{ borderColor: world.accent + "55", color: world.accent }}
@@ -250,6 +265,26 @@ function Row({
             {world.name}
           </span>
           <span className="t-label ml-1 hidden xl:inline">{project.year}</span>
+
+          {/* Straight to the real thing, without reading the write-up
+              first. Sits above the stretched link so it wins the click. */}
+          {project.live && (
+            <a
+              href={project.live}
+              target="_blank"
+              rel="noreferrer noopener"
+              data-cursor="Live site"
+              className="group/live ml-1 inline-flex items-center gap-1.5 border border-w20 px-3 py-1.5 transition-colors duration-400 hover:border-white hover:bg-white"
+            >
+              <span className="t-label text-[8px] transition-colors duration-300 group-hover/live:text-black">
+                Visit site
+              </span>
+              <span className="text-[10px] leading-none text-w60 transition-colors duration-300 group-hover/live:text-black">
+                ↗
+              </span>
+            </a>
+          )}
+
           <span className="ml-2 text-w40 transition-all duration-500 group-hover:translate-x-1 group-hover:text-white">
             →
           </span>
@@ -260,6 +295,6 @@ function Row({
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 transition-transform duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
         style={{ background: "var(--accent)" }}
       />
-    </Link>
+    </article>
   );
 }

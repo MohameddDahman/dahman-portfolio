@@ -126,15 +126,24 @@ export default function HomePage() {
             {featured.map((p, i) => {
               const w = WORLDS[p.world];
               return (
-                <Link
+                <article
                   key={p.slug}
-                  href={"/work/" + p.slug}
                   data-rise
-                  data-cursor="Open"
-                  className="panel panel-live group relative block overflow-hidden px-6 py-7 md:px-9"
+                  className="panel panel-live group relative overflow-hidden px-6 py-7 md:px-9"
                 >
                   <span className="rim" />
                   <span className="sheen" />
+
+                  {/* Covers the whole card, padding included. The visible
+                      title is plain text; this carries the link. */}
+                  <Link
+                    href={"/work/" + p.slug}
+                    data-cursor="Read"
+                    className="absolute inset-0 z-10"
+                  >
+                    <span className="sr-only">{p.title} — read the case study</span>
+                  </Link>
+
                   <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:gap-9">
                     <span className="t-mono text-[11px] text-w40">
                       {String(i + 1).padStart(2, "0")}
@@ -145,7 +154,7 @@ export default function HomePage() {
                       </h3>
                       <p className="t-body mt-2 max-w-[48ch] text-[13.5px]">{p.summary}</p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-3">
+                    <div className="relative z-20 flex shrink-0 flex-wrap items-center gap-3">
                       {p.draft && (
                         <span className="border border-w20 px-2.5 py-1">
                           <span className="t-label text-[8px]">Placeholder</span>
@@ -157,6 +166,24 @@ export default function HomePage() {
                       >
                         {w.name}
                       </span>
+
+                      {p.live && (
+                        <a
+                          href={p.live}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          data-cursor="Live site"
+                          className="group/live inline-flex items-center gap-1.5 border border-w20 px-3 py-1.5 transition-colors duration-400 hover:border-white hover:bg-white"
+                        >
+                          <span className="t-label text-[8px] transition-colors duration-300 group-hover/live:text-black">
+                            Visit site
+                          </span>
+                          <span className="text-[10px] leading-none text-w60 transition-colors duration-300 group-hover/live:text-black">
+                            ↗
+                          </span>
+                        </a>
+                      )}
+
                       <span className="text-w40 transition-all duration-500 group-hover:translate-x-1 group-hover:text-white">
                         →
                       </span>
@@ -166,7 +193,7 @@ export default function HomePage() {
                     className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 transition-transform duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
                     style={{ background: "var(--accent)" }}
                   />
-                </Link>
+                </article>
               );
             })}
           </RiseGroup>

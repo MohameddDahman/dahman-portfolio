@@ -25,6 +25,11 @@ export default async function ProjectPage({ params }: Params) {
   const project = projectBySlug(slug);
   if (!project) notFound();
 
+  // Show the real hostname on the button. "Live ↗" says nothing about
+  // where it goes; the domain is the strongest signal that this leaves for
+  // the actual shipped site rather than another page of this one.
+  const host = project.live ? new URL(project.live).host : null;
+
   const index = PROJECTS.findIndex((p) => p.slug === slug);
   const next = PROJECTS[(index + 1) % PROJECTS.length];
   const world = WORLDS[project.world];
@@ -65,6 +70,26 @@ export default async function ProjectPage({ params }: Params) {
         >
           {project.title}
         </SplitReveal>
+
+        {project.live && (
+          <a
+            href={project.live}
+            target="_blank"
+            rel="noreferrer noopener"
+            data-cursor="Live site"
+            className="group mt-9 inline-flex items-center gap-4 border border-white bg-white px-7 py-4 transition-colors duration-400 hover:bg-transparent"
+          >
+            <span className="t-label text-[10px] tracking-[0.24em] text-black transition-colors duration-300 group-hover:text-white">
+              Open the live site
+            </span>
+            <span className="t-mono text-[11px] text-black/55 transition-colors duration-300 group-hover:text-w60">
+              {host}
+            </span>
+            <span className="text-[13px] leading-none text-black transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white">
+              ↗
+            </span>
+          </a>
+        )}
 
         <div className="rule mt-10" />
       </header>
@@ -176,16 +201,18 @@ export default async function ProjectPage({ params }: Params) {
               )}
 
               {(project.live || project.source) && (
-                <div className="relative mt-7 flex flex-wrap gap-3">
+                <div className="relative mt-7">
+                  <div className="t-label mb-3">Links</div>
+                  <div className="flex flex-wrap gap-2">
                   {project.live && (
                     <a
                       href={project.live}
                       target="_blank"
                       rel="noreferrer noopener"
-                      data-cursor="Visit"
+                      data-cursor="Live site"
                       className="t-label border border-w20 px-4 py-2 transition-colors duration-400 hover:border-white hover:text-white"
                     >
-                      Live ↗
+                      Open live site ↗
                     </a>
                   )}
                   {project.source && (
@@ -196,9 +223,10 @@ export default async function ProjectPage({ params }: Params) {
                       data-cursor="Source"
                       className="t-label border border-w20 px-4 py-2 transition-colors duration-400 hover:border-white hover:text-white"
                     >
-                      Source ↗
+                      Source code ↗
                     </a>
                   )}
+                  </div>
                 </div>
               )}
             </Panel>
