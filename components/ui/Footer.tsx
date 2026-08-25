@@ -1,75 +1,40 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-import { WORLD_LIST } from "@/lib/worlds";
 
 const EMAIL = "medodahman454@gmail.com";
 
-/** Closing plate. Doubles as a map of the seven worlds. */
+/** Closing plate. Contact first, because that is what a footer is for. */
 export default function Footer() {
-  const clock = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    const fmt = new Intl.DateTimeFormat("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
-    const paint = () => {
-      if (clock.current) clock.current.textContent = fmt.format(new Date());
-    };
-    paint();
-    const id = window.setInterval(paint, 1000);
-    return () => window.clearInterval(id);
-  }, []);
-
   return (
-    <footer className="relative z-10 mt-[10vh] pb-24 md:pb-16">
-      <div className="shell">
-        <div className="rule" />
-
-        <div className="grid gap-12 py-14 lg:grid-cols-[1.5fr_1fr_1fr]">
+    <footer className="rule-t mt-24 bg-wash">
+      <div className="shell py-16">
+        <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <p className="t-display max-w-[14ch] text-[clamp(1.4rem,2.6vw,2rem)]">
-              Available for new work
+            <h2 className="t-h3">Available for frontend work</h2>
+            <p className="measure mt-3 text-[1rem] leading-relaxed text-ink-2">
+              Freelance or full-time. Send a sentence about what you&rsquo;re
+              building and I&rsquo;ll reply within a working day.
             </p>
-            <a
-              href={"mailto:" + EMAIL}
-              data-cursor="Write"
-              className="group mt-6 inline-flex items-center gap-2"
-            >
-              <span className="t-mono text-[12px] text-white">{EMAIL}</span>
-              <span
-                className="block h-px w-0 transition-all duration-500 group-hover:w-6"
-                style={{ background: "var(--accent)" }}
-              />
+            <a href={"mailto:" + EMAIL} className="link mt-5 inline-block text-[1rem]">
+              {EMAIL}
             </a>
           </div>
 
-          <nav aria-label="Footer" className="flex flex-col gap-2.5">
-            <span className="t-label mb-1">Pages</span>
+          <nav aria-label="Footer" className="flex flex-col gap-3">
+            <h3 className="t-label mb-1">Pages</h3>
             {[
               ["Home", "/"],
               ["Work", "/work"],
-              ["Lab", "/lab"],
               ["About", "/about"],
               ["Contact", "/contact"],
             ].map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                data-cursor={label}
-                className="t-mono w-fit text-[11px] text-w40 transition-colors duration-400 hover:text-white"
-              >
+              <Link key={href} href={href} className="link w-fit text-[0.95rem]">
                 {label}
               </Link>
             ))}
           </nav>
 
-          <div className="flex flex-col gap-2.5">
-            <span className="t-label mb-1">Elsewhere</span>
+          <div className="flex flex-col gap-3">
+            <h3 className="t-label mb-1">Elsewhere</h3>
             {[
               ["GitHub", "https://github.com"],
               ["LinkedIn", "https://linkedin.com"],
@@ -79,38 +44,18 @@ export default function Footer() {
                 href={href}
                 target="_blank"
                 rel="noreferrer noopener"
-                data-cursor={label}
-                className="t-mono w-fit text-[11px] text-w40 transition-colors duration-400 hover:text-white"
+                className="link w-fit text-[0.95rem]"
               >
-                {label} ↗
+                {label}
               </a>
             ))}
           </div>
         </div>
 
-        {/* The seven worlds, as a legend. */}
-        <div className="rule" />
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 py-6">
-          <span className="t-label">Worlds</span>
-          {WORLD_LIST.map((w) => (
-            <span key={w.id} className="flex items-center gap-1.5">
-              <span
-                className="h-1.5 w-1.5"
-                style={{ background: w.accent }}
-              />
-              <span className="t-label">{w.name}</span>
-            </span>
-          ))}
-        </div>
-
-        <div className="rule" />
-        <div className="flex flex-col gap-3 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <span className="t-label">
+        <div className="rule-t mt-14 pt-6">
+          <p className="t-label">
             Mohamed Dahman — {new Date().getFullYear()}
-          </span>
-          <span className="t-label">
-            Local <span ref={clock}>--:--:--</span>
-          </span>
+          </p>
         </div>
       </div>
     </footer>

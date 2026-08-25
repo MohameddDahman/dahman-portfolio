@@ -1,436 +1,384 @@
 @import "tailwindcss";
-@import "shadcn/tailwind.css";
 
 /* ============================================================
-   Pure black, white, and nothing else.
+   SPECIMEN — a portfolio laid out like a printed spec sheet.
 
-   The whole palette is one colour at seven alphas — 95/90/60/40/30/
-   20/8 percent white. Hierarchy comes from size and opacity, never
-   from hue or weight.
+   One rule holds the whole thing together: text and image never
+   share pixels. The previous build put a live 3D scene behind every
+   paragraph and the client could not read it. Here the 3D is a
+   numbered figure inside a frame, and every word sits on paper.
 
-   Surfaces are not grey cards. They are black at low alpha with a
-   backdrop blur behind them and a 0.8px border at 2.4% white, so
-   they read as glass laid over the 3D rather than boxes sitting on
-   top of it. Nothing has a corner radius.
-
-   The fixed chrome composites with mix-blend-mode: difference, so it
-   inverts against whatever the world puts behind it and never needs
-   a plate of its own.
+   Colour is almost entirely absent. There is exactly one accent — a
+   highlighter — and it is only ever allowed *behind text*, because
+   the one flourish on a page about legibility should be a device for
+   marking things as readable.
    ============================================================ */
 
 @theme {
-  --color-void: #000000;
-  --color-pitch: #020202;
+  /* Paper and ink */
+  --color-paper: #ffffff;
+  --color-wash: #f6f6f3;
+  --color-rule: #e3e3dd;
+  --color-edge: #c9c9c1;
+  --color-ink: #101010;
+  --color-ink-2: #45453f;
+  --color-ink-3: #6f6f68;
 
-  --color-w95: rgba(255, 255, 255, 0.95);
-  --color-w90: rgba(255, 255, 255, 0.9);
-  --color-w60: rgba(255, 255, 255, 0.6);
-  --color-w40: rgba(255, 255, 255, 0.4);
-  --color-w30: rgba(255, 255, 255, 0.3);
-  --color-w20: rgba(255, 255, 255, 0.2);
-  --color-w12: rgba(255, 255, 255, 0.12);
-  --color-w08: rgba(255, 255, 255, 0.08);
-  --color-w04: rgba(255, 255, 255, 0.04);
-  --color-hair: rgba(255, 255, 255, 0.024);
+  /* The only chromatic value in the system. */
+  --color-mark: #ddf163;
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-mono-face), ui-monospace, monospace;
 }
 
 :root {
-  --radius: 0px;
-
-  /* Kept as a variable so colour could be reintroduced per world later,
-     but every world sets it to white. The design carries no hue. */
-  --accent: #ffffff;
-  --accent-deep: rgba(255, 255, 255, 0.45);
-
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: rgba(0, 0, 0, 0.35);
-  --card-foreground: #ffffff;
-  --popover: rgba(0, 0, 0, 0.55);
-  --popover-foreground: #ffffff;
-  --primary: #ffffff;
-  --primary-foreground: #000000;
-  --secondary: rgba(255, 255, 255, 0.08);
-  --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.08);
-  --muted-foreground: rgba(255, 255, 255, 0.4);
-  --accent-foreground: #000000;
-  --destructive: #ffffff;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #ffffff;
-
-  /* 0..1 down the current page. */
-  --depth: 0;
+  --measure: 34rem; /* ~68 characters at the body size */
 }
 
 @layer base {
-  * {
-    border-color: var(--color-w08);
-  }
-
   html {
-    background: #000;
-    color-scheme: dark;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    /* Native scroll. Smooth-scroll libraries were part of what made the
+       last build feel unresponsive, and they buy nothing here. */
+    scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
-  html.lenis,
-  html.lenis body {
-    height: auto;
-  }
-  .lenis.lenis-smooth {
-    scroll-behavior: auto !important;
-  }
-  .lenis.lenis-stopped {
-    overflow: hidden;
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   body {
-    background: #000;
-    color: #fff;
-    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-    font-size: 14px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    /* 18px. The old build ran 13.5px body and 9px labels, which is the
+       single biggest reason it could not be read. */
+    font-size: 18px;
+    line-height: 1.65;
     font-weight: 400;
-    line-height: 1.6;
-    overscroll-behavior-y: none;
   }
 
   ::selection {
-    background: #fff;
-    color: #000;
+    background: var(--color-mark);
+    color: var(--color-ink);
   }
 
+  /* 2px black ring, never removed. Visible on paper at any size. */
   :focus-visible {
-    outline: 1px solid #fff;
+    outline: 2px solid var(--color-ink);
     outline-offset: 3px;
+    border-radius: 1px;
   }
 
-  /* `cursor: none` is applied from JS only once the custom pointer is
-     actually tracking, and taken off again on any stall. Being left with
-     no pointer at all is a far worse failure than having the default. */
-  html.pointer-live,
-  html.pointer-live * {
-    cursor: none !important;
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-ink);
+    text-wrap: balance;
   }
 
-  /* Lenis owns the scroll and the HUD reports position, so the native
-     scrollbar is redundant chrome. */
-  ::-webkit-scrollbar {
-    width: 0;
-    height: 0;
+  p {
+    text-wrap: pretty;
   }
-  html {
-    scrollbar-width: none;
+}
+
+/* ============================================================
+   Page transitions
+
+   Two of them, and the difference carries meaning rather than
+   variety. Moving between sections is a crossfade: you changed
+   subject, nothing is being carried across. Opening a project lifts
+   the page in from below while the title you clicked morphs into the
+   heading — the item comes with you.
+
+   Everything is short. The brief was "some, but not much", and a
+   transition you have to wait through is a transition that gets in
+   the way of reading.
+   ============================================================ */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Driven off the root group and the active transition type rather than
+     React's per-element enter/exit classes, because <main> stays mounted
+     across a navigation — React sees an update, not an enter or an exit,
+     so those classes never get applied.
+
+     Verified in the browser by starting each transition by hand and
+     reading document.getAnimations() at vt.ready: all three types resolve
+     to exactly the durations authored below. Note that the automation
+     browser fast-forwards transitions, so vt.finished always returns
+     ~25ms there — the animation list is the signal, not the timing. */
+
+  /* --- Between sections: a short crossfade. Nothing is carried across,
+         because you changed subject. --- */
+  ::view-transition-old(root) {
+    animation: 150ms ease-in both vt-fade-out;
+  }
+  ::view-transition-new(root) {
+    animation: 260ms cubic-bezier(0.22, 1, 0.36, 1) 110ms both vt-fade-in;
+  }
+
+  /* --- Into a project ------------------------------------------------
+         The one choreographed moment on the site, and the right place for
+         it: a transition is over before anyone starts reading, so it
+         never competes with the copy the way ambient motion does.
+
+         The list recedes rather than simply leaving — it scales back so
+         it reads as going *behind* the new page — and the project rises
+         up from below, as though the row you clicked opened into it. --- */
+  html:active-view-transition-type(open-project)::view-transition-old(root) {
+    animation: 240ms cubic-bezier(0.4, 0, 1, 1) both vt-recede;
+    transform-origin: 50% 38%;
+  }
+  html:active-view-transition-type(open-project)::view-transition-new(root) {
+    animation: 420ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both vt-rise-in;
+  }
+
+  /* --- Back out of a project: the reverse, and quicker. Going back
+         should always feel faster than going in. --- */
+  html:active-view-transition-type(close-project)::view-transition-old(root) {
+    animation: 160ms ease-in both vt-drop-out;
+  }
+  html:active-view-transition-type(close-project)::view-transition-new(root) {
+    animation: 300ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both vt-advance-in;
+  }
+
+  @keyframes vt-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes vt-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes vt-recede {
+    to {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+  @keyframes vt-rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(26px) scale(0.994);
+    }
+  }
+  @keyframes vt-drop-out {
+    to {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+  }
+  @keyframes vt-advance-in {
+    from {
+      opacity: 0;
+      transform: scale(0.985);
+    }
   }
 }
 
 @layer components {
-  /* ---- Type -------------------------------------------------------
-     Everything structural is uppercase at weight 400 with *positive*
-     tracking. No bold, no negative letter-spacing, no oversized soft
-     display face. */
+  /* ---- Type roles -------------------------------------------------
+     Four sizes, one job each. Hierarchy is size and weight, never
+     opacity: faded grey text was the other half of the legibility
+     problem. Nothing here goes below 4.5:1 on white. */
 
-  .t-display {
-    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-    font-weight: 400;
-    text-transform: uppercase;
-    line-height: 0.95;
-    letter-spacing: 0.012em;
-    /* Archivo's width axis narrows a little as you read down a page. */
-    font-variation-settings: "wdth" calc(100 - var(--depth) * 8);
+  .t-hero {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2.4rem, 6.2vw, 4.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-variation-settings: "wdth" 96;
   }
 
-  .t-display-xl {
-    font-size: clamp(2.4rem, 6.2vw, 5rem);
-    letter-spacing: 0.006em;
+  .t-h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.65rem, 3.2vw, 2.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.024em;
   }
 
-  .t-display-lg {
-    font-size: clamp(1.6rem, 3vw, 2.4rem);
-    letter-spacing: 0.022em;
+  .t-h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.15rem, 1.8vw, 1.4rem);
+    line-height: 1.25;
+    letter-spacing: -0.014em;
   }
 
-  .t-display-sm {
-    font-size: clamp(0.95rem, 1.4vw, 1.25rem);
-    letter-spacing: 0.07em;
-  }
-
-  .t-mono {
-    font-family: var(--font-mono), ui-monospace, monospace;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.04em;
-  }
-
-  /* The workhorse. Nearly every piece of chrome on the site is this. */
+  /* 13px, not 9px. Uppercase mono still has to be readable. */
   .t-label {
-    font-family: var(--font-mono), ui-monospace, monospace;
-    font-size: 9px;
-    font-weight: 400;
-    letter-spacing: 0.19em;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-w40);
+    color: var(--color-ink-2);
     font-variant-numeric: tabular-nums;
   }
 
-  .t-label-lit {
-    color: var(--color-w90);
+  .t-data {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--color-ink-2);
+    font-variant-numeric: tabular-nums;
   }
 
-  .t-body {
-    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-    font-weight: 400;
-    font-size: 13.5px;
-    color: var(--color-w60);
-    line-height: 1.75;
-    letter-spacing: 0.005em;
+  .t-lead {
+    font-size: clamp(1.125rem, 1.6vw, 1.3rem);
+    line-height: 1.6;
+    color: var(--color-ink-2);
   }
 
-  /* Fixed chrome inverts against whatever is behind it, so it stays
-     readable over any world without carrying a background. */
-  .blend-diff {
-    mix-blend-mode: difference;
-  }
-
-  /* ---- Surfaces ---------------------------------------------------
-     Black glass. The blur is what separates a panel from the world
-     behind it; the border is barely there on purpose. */
-
-  .panel {
-    position: relative;
-    border-radius: 0;
-    border: 0.8px solid var(--color-hair);
-    background: rgba(0, 0, 0, 0.28);
-    backdrop-filter: blur(10px);
-  }
-
-  .panel-solid {
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(24px);
-  }
-
-  /* Cursor-tracked rim. One pointer handler writes two custom
-     properties; the compositor draws the gradient, so a page full of
-     these costs nothing per frame. */
-  .panel-live {
-    --mx: 50%;
-    --my: 50%;
-    --lit: 0;
-  }
-  .panel-live > .rim {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: var(--lit);
-    transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-    padding: 0.8px;
-    background: radial-gradient(
-      260px circle at var(--mx) var(--my),
-      rgba(255, 255, 255, 0.55),
-      rgba(255, 255, 255, 0.12) 45%,
-      transparent 70%
+  /* ---- The one flourish -------------------------------------------
+     A highlighter. Sits behind the text baseline like a marked-up
+     proof, and is only ever used on words — never as a fill, a border
+     or an icon colour. */
+  .mark {
+    background-image: linear-gradient(
+      to bottom,
+      transparent 58%,
+      var(--color-mark) 58%
     );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude;
+    padding-inline: 0.08em;
   }
-  .panel-live > .sheen {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: var(--lit);
-    transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-    background: radial-gradient(
-      300px circle at var(--mx) var(--my),
-      rgba(255, 255, 255, 0.05),
-      transparent 68%
-    );
+
+  /* ---- Surfaces ---------------------------------------------------- */
+
+  .card {
+    background: var(--color-paper);
+    border: 1px solid var(--color-rule);
+    transition:
+      border-color 200ms ease,
+      background-color 200ms ease;
+  }
+  .card:hover {
+    border-color: var(--color-ink);
   }
 
   /* ---- Controls ----------------------------------------------------
-     Square, hairline, and they invert on hover rather than tint. */
+     Real buttons: 48px tall, high contrast, obvious hover. */
 
   .btn {
-    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 1.1rem;
-    overflow: hidden;
-    border-radius: 0;
-    border: 0.8px solid var(--color-w20);
-    padding: 0.85rem 1.6rem;
-    transition: border-color 0.4s ease;
-  }
-  .btn > .fill {
-    position: absolute;
-    inset: 0;
-    background: #fff;
-    transform: translateY(101%);
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    gap: 0.6rem;
+    min-height: 48px;
+    padding: 0 1.4rem;
+    border: 1px solid var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
   }
   .btn:hover {
-    border-color: #fff;
+    background: var(--color-paper);
+    color: var(--color-ink);
   }
-  .btn:hover > .fill {
-    transform: translateY(0);
+
+  .btn-quiet {
+    background: transparent;
+    color: var(--color-ink);
   }
-  .btn > .lbl {
+  .btn-quiet:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  /* A text link that reads as a link without shouting. */
+  .link {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--color-edge);
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+    transition: text-decoration-color 200ms ease;
+  }
+  .link:hover {
+    text-decoration-color: var(--color-ink);
+  }
+
+  /* ---- Figure ------------------------------------------------------
+     Where the 3D is allowed to live: inside a frame, with a number and
+     a caption, like a plate in a technical document. Never behind a
+     paragraph. */
+
+  .figure-frame {
     position: relative;
-    transition: color 0.3s ease;
-  }
-  .btn:hover > .lbl {
-    color: #000;
-  }
-
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: 0.8px solid var(--color-w12);
-    padding: 0.4rem 0.7rem;
-  }
-
-  /* ---- Reveal initial state ---------------------------------------- */
-
-  .rise {
-    opacity: 0;
-    transform: translate3d(0, 18px, 0);
-    will-change: transform, opacity;
+    border: 1px solid var(--color-rule);
+    background: var(--color-wash);
+    overflow: hidden;
   }
 }
 
 @layer utilities {
   .shell {
     width: 100%;
-    max-width: 1680px;
+    max-width: 78rem;
     margin-inline: auto;
-    padding-inline: clamp(1.1rem, 3.4vw, 3.4rem);
+    padding-inline: clamp(1.25rem, 5vw, 4rem);
   }
 
-  /* Holds copy legible over a live world without a full-screen blur. */
-  .scrim {
-    background: radial-gradient(
-      120% 85% at 50% 50%,
-      rgba(0, 0, 0, 0.9) 0%,
-      rgba(0, 0, 0, 0.6) 58%,
-      transparent 100%
-    );
+  /* Caps the reading line at roughly 68 characters. */
+  .measure {
+    max-width: var(--measure);
   }
 
-  .rule {
-    height: 0.8px;
-    background: var(--color-w08);
+  .measure-wide {
+    max-width: 46rem;
   }
 
-  .rule-lit {
-    height: 0.8px;
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.35),
-      rgba(255, 255, 255, 0.04) 60%,
-      transparent
-    );
+  .rule-t {
+    border-top: 1px solid var(--color-rule);
+  }
+  .rule-b {
+    border-bottom: 1px solid var(--color-rule);
   }
 
-  /* Global film grain. Low, and never lifts the black off zero. */
-  .grain {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.055;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* One reveal, used everywhere. 10px and 300ms, per the motion tier
+     this project was specified at. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  /* Pinned over everything. This is what makes the corners of a
-     full-bleed 3D scene sit down instead of glowing. */
-  .vignette {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(
-      120% 100% at 50% 45%,
-      transparent 40%,
-      rgba(0, 0, 0, 0.55) 100%
-    );
-  }
-
-  /* ---- The rail ---------------------------------------------------
-     One set of rows serves both layouts. Below the breakpoint they are
-     a plain vertical list; above it they lift onto a shared 3D stage
-     with one vanishing point.
-
-     This has to be CSS rather than two rendered lists: each row is one
-     entry in the accessibility tree, and rendering it twice duplicates
-     the whole project list for screen readers. */
-
-  .rail-stage {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .rail-row {
-    position: relative;
-  }
-
-  @media (min-width: 1000px) {
-    .rail-stage {
-      display: block;
-      position: absolute;
-      inset: 0;
-      perspective: 1200px;
-      perspective-origin: 50% 50%;
-      transform-style: preserve-3d;
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
     }
-
-    .rail-row {
-      position: absolute;
-      inset-inline: 0;
-      top: 50%;
-      transform-style: preserve-3d;
-      will-change: transform, opacity;
-      backface-visibility: hidden;
+    .reveal-in {
+      transition: none;
     }
-
-    /* Fades the corridor into the dark at both ends. Only on the 3D
-       layout — over a plain list it would clip the first and last rows. */
-    .rail-mask {
-      -webkit-mask-image: linear-gradient(
-        to bottom,
-        transparent 0%,
-        #000 20%,
-        #000 80%,
-        transparent 100%
-      );
-      mask-image: linear-gradient(
-        to bottom,
-        transparent 0%,
-        #000 20%,
-        #000 80%,
-        transparent 100%
-      );
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
     }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rise {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-  .btn > .fill {
-    transition: none;
-  }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
   }
 }

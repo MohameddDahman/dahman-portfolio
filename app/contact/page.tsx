@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useMutation } from "convex/react";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -9,15 +9,11 @@ import { z } from "zod";
 
 import { api } from "@/convex/_generated/api";
 import PageHead from "@/components/ui/PageHead";
-import Panel from "@/components/ui/Panel";
-import Magnetic from "@/components/motion/Magnetic";
+import { Reveal } from "@/components/motion/Reveal";
 
 const EMAIL = "medodahman454@gmail.com";
 
-/**
- * Validation messages are instructions, not complaints — each one says
- * what to do rather than what went wrong.
- */
+/** Messages are instructions: each says what to do, not what went wrong. */
 const schema = z.object({
   name: z.string().trim().min(1, "Add your name"),
   email: z.email("Use an address you can be reached at"),
@@ -30,8 +26,20 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 const FIELDS = [
-  { name: "name", label: "Name", placeholder: "Who is writing", type: "text", n: "01" },
-  { name: "email", label: "Email", placeholder: "Where to reply", type: "email", n: "02" },
+  {
+    name: "name",
+    label: "Your name",
+    type: "text",
+    autoComplete: "name",
+    hint: null,
+  },
+  {
+    name: "email",
+    label: "Email",
+    type: "email",
+    autoComplete: "email",
+    hint: "So I can reply.",
+  },
 ] as const;
 
 const FAQ = [
@@ -45,11 +53,7 @@ const FAQ = [
   },
   {
     q: "Do you take on rescues?",
-    a: "Often. A slow page or a build nobody wants to touch is a well-defined problem, and those are satisfying to fix.",
-  },
-  {
-    q: "What if it is outside what you do?",
-    a: "I will say so. That is faster for both of us than finding out three weeks in.",
+    a: "Often. A slow page, or a build nobody wants to touch, is a well-defined problem — and those are satisfying to fix.",
   },
 ];
 
@@ -57,12 +61,20 @@ export default function ContactPage() {
   const [isPending, startTransition] = useTransition();
   const [sent, setSent] = useState(false);
   const [failed, setFailed] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
   const sendMessage = useMutation(api.messages.sendMessage);
 
   const form = useForm<Values>({
     resolver: standardSchemaResolver(schema),
     defaultValues: { name: "", email: "", messageContent: "" },
   });
+
+  // Send focus to the error summary when a submit fails, so a keyboard or
+  // screen-reader user is told what happened instead of being left on a
+  // button that appears to have done nothing.
+  useEffect(() => {
+    if (failed) errorRef.current?.focus();
+  }, [failed]);
 
   function onSubmit(values: Values) {
     setFailed(false);
@@ -80,180 +92,142 @@ export default function ContactPage() {
   }
 
   const errors = form.formState.errors;
-  const status = sent ? "Delivered" : isPending ? "Sending" : "Ready";
 
   return (
-    <main>
+    <>
       <PageHead
-        index="04"
-        eyebrow="Bloom · The swarm follows you"
+        eyebrow="Contact"
         title="Send a message"
-        lede="Tell me what you're building and roughly when you need it. If it's outside what I do, I'll say so and point you somewhere better."
-        meta={[
-          ["Direct", EMAIL],
-          ["Reply within", "One working day"],
-          ["Working", "Remote, flexible hours"],
-        ]}
+        lead="Tell me what you're building and roughly when you need it. If it's outside what I do, I'll say so and point you somewhere better."
       />
 
-      <section className="shell grid gap-10 py-[4vh] lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-        <div>
-          <a
-            href={"mailto:" + EMAIL}
-            data-cursor="Email"
-            className="group inline-flex items-center gap-2"
-          >
-            <span className="t-mono text-[12px] text-white">{EMAIL}</span>
-            <span
-              className="block h-px w-0 transition-all duration-500 group-hover:w-6"
-              style={{ background: "var(--accent)" }}
-            />
+      <section className="shell grid gap-14 pb-20 lg:grid-cols-[1fr_1.2fr] lg:gap-24">
+        <Reveal>
+          <h2 className="t-label">Or just email me</h2>
+          <a href={"mailto:" + EMAIL} className="link mt-4 block text-[1.125rem]">
+            {EMAIL}
           </a>
-
-          <p className="t-body mt-8 max-w-[38ch] text-[14.5px]">
-            Prefer to skip the form? The address above goes to the same inbox
-            and I read everything.
+          <p className="measure mt-6 text-[1rem] leading-relaxed text-ink-2">
+            Same inbox as the form, and I read everything. Replies usually go
+            out within a working day.
           </p>
-
-          <Link
-            href="/work"
-            data-cursor="Work"
-            className="t-label group mt-10 inline-flex items-center gap-2 transition-colors duration-400 hover:text-white"
-          >
-            <span className="transition-transform duration-400 group-hover:-translate-x-1">←</span>
-            See the work first
+          <Link href="/work" className="link mt-8 inline-block text-[1rem]">
+            ← See the work first
           </Link>
-        </div>
+        </Reveal>
 
-        <Panel className="p-7 md:p-10">
-          <div className="relative mb-8 flex items-center justify-between border-b border-w08 pb-4">
-            <span className="t-label">Message</span>
-            <span className="t-label" style={{ color: sent ? "var(--accent)" : undefined }}>
-              {status}
-            </span>
-          </div>
-
+        <Reveal delay={60}>
           {sent ? (
-            <div className="relative py-10">
-              <h2 className="t-display text-[clamp(1.4rem,2.6vw,2rem)] text-white">
-                Message received
-              </h2>
-              <p className="t-body mt-4 max-w-sm text-[14.5px]">
-                It&apos;s in the inbox. Expect a reply within a working day.
+            <div className="card p-8">
+              <h2 className="t-h3">Message received</h2>
+              <p className="measure mt-3 text-[1rem] leading-relaxed text-ink-2">
+                It&rsquo;s in the inbox. Expect a reply within a working day.
               </p>
               <button
                 onClick={() => setSent(false)}
-                data-cursor="Again"
-                className="t-label group mt-8 inline-flex items-center gap-2 transition-colors duration-400 hover:text-white"
+                className="btn btn-quiet mt-8"
               >
                 Write another
-                <span className="transition-transform duration-400 group-hover:translate-x-1">→</span>
               </button>
             </div>
           ) : (
-            <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="relative space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-8">
+              {failed && (
+                <div
+                  ref={errorRef}
+                  tabIndex={-1}
+                  role="alert"
+                  className="border border-ink p-4 text-[0.95rem]"
+                >
+                  The message didn&rsquo;t send. Check your connection and try
+                  again, or email {EMAIL} directly.
+                </div>
+              )}
+
               {FIELDS.map((f) => (
                 <div key={f.name}>
-                  <div className="mb-2.5 flex items-baseline justify-between gap-4">
-                    <label htmlFor={f.name} className="t-label flex items-baseline gap-2">
-                      <span className="text-w30">{f.n}</span>
-                      {f.label}
-                    </label>
-                    {errors[f.name] && (
-                      <span className="t-mono text-[10px]" style={{ color: "var(--accent)" }}>
-                        {errors[f.name]?.message}
-                      </span>
-                    )}
-                  </div>
+                  <label
+                    htmlFor={f.name}
+                    className="block font-[family-name:var(--font-display)] text-[1rem] font-medium"
+                  >
+                    {f.label}
+                  </label>
+                  {f.hint && (
+                    <p id={f.name + "-hint"} className="mt-1 text-[0.9rem] text-ink-3">
+                      {f.hint}
+                    </p>
+                  )}
                   <input
                     id={f.name}
                     type={f.type}
-                    autoComplete={f.name === "email" ? "email" : "name"}
+                    autoComplete={f.autoComplete}
                     aria-invalid={!!errors[f.name]}
-                    placeholder={f.placeholder}
+                    aria-describedby={
+                      [errors[f.name] ? f.name + "-error" : null, f.hint ? f.name + "-hint" : null]
+                        .filter(Boolean)
+                        .join(" ") || undefined
+                    }
                     {...form.register(f.name)}
-                    className="w-full border-b border-w08 bg-transparent pb-3 font-mono text-[13px] text-white outline-none transition-colors duration-300 placeholder:text-w30 focus:border-[var(--accent)] aria-[invalid=true]:border-[var(--accent)]"
+                    className="mt-3 min-h-[48px] w-full border border-edge bg-paper px-4 text-[1rem] text-ink outline-none transition-colors duration-200 focus:border-ink aria-[invalid=true]:border-ink"
                   />
+                  {errors[f.name] && (
+                    <p id={f.name + "-error"} className="mt-2 text-[0.9rem] text-ink">
+                      <span className="mark">{errors[f.name]?.message}</span>
+                    </p>
+                  )}
                 </div>
               ))}
 
               <div>
-                <div className="mb-2.5 flex items-baseline justify-between gap-4">
-                  <label htmlFor="messageContent" className="t-label flex items-baseline gap-2">
-                    <span className="text-w30">03</span>
-                    Message
-                  </label>
-                  {errors.messageContent && (
-                    <span className="t-mono text-[10px]" style={{ color: "var(--accent)" }}>
-                      {errors.messageContent.message}
-                    </span>
-                  )}
-                </div>
+                <label
+                  htmlFor="messageContent"
+                  className="block font-[family-name:var(--font-display)] text-[1rem] font-medium"
+                >
+                  What are you building?
+                </label>
                 <textarea
                   id="messageContent"
-                  rows={6}
+                  rows={7}
                   aria-invalid={!!errors.messageContent}
-                  placeholder="What you're building, and what you need from me"
+                  aria-describedby={
+                    errors.messageContent ? "messageContent-error" : undefined
+                  }
                   {...form.register("messageContent")}
-                  className="w-full resize-none border-b border-w08 bg-transparent pb-3 font-mono text-[13px] leading-relaxed text-white outline-none transition-colors duration-300 placeholder:text-w30 focus:border-[var(--accent)] aria-[invalid=true]:border-[var(--accent)]"
+                  className="mt-3 w-full resize-y border border-edge bg-paper p-4 text-[1rem] leading-relaxed text-ink outline-none transition-colors duration-200 focus:border-ink aria-[invalid=true]:border-ink"
                 />
+                {errors.messageContent && (
+                  <p id="messageContent-error" className="mt-2 text-[0.9rem] text-ink">
+                    <span className="mark">{errors.messageContent.message}</span>
+                  </p>
+                )}
               </div>
 
-              {failed && (
-                <p className="t-mono border border-w20 px-4 py-3 text-[11px] text-white">
-                  The message didn&apos;t send. Check your connection and try
-                  again, or email {EMAIL} directly.
-                </p>
-              )}
-
-              <div className="flex justify-end pt-2">
-                <Magnetic strength={0.18}>
-                  <button
-                    type="submit"
-                    disabled={isPending}
-                    data-cursor="Send"
-                    className="btn disabled:cursor-wait disabled:opacity-55"
-                  >
-                    <span className="fill" />
-                    <span className="lbl t-label text-white">
-                      {isPending ? "Sending" : "Send message"}
-                    </span>
-                    <span className="lbl">→</span>
-                  </button>
-                </Magnetic>
-              </div>
+              <button type="submit" disabled={isPending} className="btn disabled:opacity-60">
+                {isPending ? "Sending…" : "Send message"}
+              </button>
             </form>
           )}
-        </Panel>
+        </Reveal>
       </section>
 
-      {/* ---- FAQ ---- */}
-      <section className="shell py-[10vh]">
-        <h2 className="t-label mb-8">Before you write</h2>
-        <div className="rule mb-2" />
+      <section className="rule-t bg-wash">
+        <div className="shell py-20">
+          <Reveal>
+            <h2 className="t-h2">Before you write</h2>
+          </Reveal>
 
-        <div>
-          {FAQ.map((item) => (
-            <details key={item.q} className="group border-b border-w08 py-6">
-              <summary
-                data-cursor="Open"
-                className="flex cursor-pointer list-none items-baseline justify-between gap-8"
-              >
-                <span className="t-display text-[clamp(1.1rem,1.9vw,1.5rem)] text-white">
-                  {item.q}
-                </span>
-                <span
-                  className="t-mono shrink-0 text-[14px] transition-transform duration-400 group-open:rotate-45"
-                  style={{ color: "var(--accent)" }}
-                >
-                  +
-                </span>
-              </summary>
-              <p className="t-body mt-4 max-w-[60ch] text-[14.5px]">{item.a}</p>
-            </details>
-          ))}
+          <dl className="mt-12 grid gap-x-16 gap-y-10 md:grid-cols-2">
+            {FAQ.map((item, i) => (
+              <Reveal key={item.q} delay={i * 50}>
+                <dt className="t-h3">{item.q}</dt>
+                <dd className="measure mt-3 text-[1rem] leading-relaxed text-ink-2">
+                  {item.a}
+                </dd>
+              </Reveal>
+            ))}
+          </dl>
         </div>
       </section>
-    </main>
+    </>
   );
 }

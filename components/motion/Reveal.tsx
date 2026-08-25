@@ -8,247 +8,68 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SplitText } from "gsap/SplitText";
-import { quality, scroll } from "@/lib/motion-state";
-
-let registered = false;
-function register() {
-  if (registered) return;
-  gsap.registerPlugin(ScrollTrigger, SplitText);
-  registered = true;
-}
-
-type Tag = "div" | "p" | "h1" | "h2" | "h3" | "h4" | "span" | "li" | "blockquote";
 
 /**
- * Line-masked reveal, split on real line boxes.
+ * The only animation on the site.
  *
- * `autoSplit` re-measures on resize, which matters: a reflowed paragraph
- * with stale line masks clips its own text permanently, and it only shows
- * up at viewport widths nobody tested.
+ * A 10px rise and a fade, once, on entry. No library, no scroll
+ * listener, no per-frame work — an IntersectionObserver flips one class
+ * and disconnects. The previous build ran split-text line masks, velocity
+ * skew, parallax and a pinned scroll hijack, which is what made the copy
+ * unreadable; the brief here is explicitly "some, but not much".
  *
- * `immediate` runs on mount instead of on scroll — needed after a warp,
- * where the heading is already in frame and a scroll trigger would leave
- * it invisible on arrival.
+ * Reduced motion is handled in CSS, so the element is simply visible from
+ * the start rather than depending on this component running at all.
  */
-export function SplitReveal({
+export function Reveal({
   children,
-  as = "div",
-  className,
-  stagger = 0.075,
+  as: Tag = "div",
+  className = "",
   delay = 0,
-  immediate = false,
 }: {
   children: ReactNode;
-  as?: Tag;
+  as?: "div" | "section" | "article" | "li" | "p" | "span";
   className?: string;
-  stagger?: number;
+  /** Milliseconds. Used sparingly, to stagger a short list. */
   delay?: number;
-  immediate?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    register();
 
-    if (quality.reducedMotion) {
-      gsap.set(el, { autoAlpha: 1 });
+    // No observer needed if the visitor has asked for less motion — the
+    // stylesheet already renders the final state.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.classList.add("reveal-in");
       return;
     }
 
-    const ctx = gsap.context(() => {
-      const split = SplitText.create(el, {
-        type: "lines",
-        mask: "lines",
-        autoSplit: true,
-        onSplit(self) {
-          return gsap.from(self.lines, {
-            yPercent: 112,
-            duration: 1.1,
-            ease: "expo.out",
-            stagger,
-            delay,
-            scrollTrigger: immediate
-              ? undefined
-              : { trigger: el, start: "top 88%", once: true },
-          });
-        },
-      });
-      return () => split.revert();
-    }, el);
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        el.style.transitionDelay = delay + "ms";
+        el.classList.add("reveal-in");
+        io.disconnect();
+      },
+      { rootMargin: "0px 0px -8% 0px" },
+    );
 
-    return () => ctx.revert();
-  }, [stagger, delay, immediate]);
+    io.observe(el);
+    return () => io.disconnect();
+  }, [delay]);
 
-  // A polymorphic intrinsic tag does not narrow children or ref in JSX
-  // position, so it is cast to a component accepting both. React 19 treats
-  // ref as an ordinary prop, which makes this safe.
-  const Element = as as unknown as ComponentType<
+  // A polymorphic intrinsic tag does not narrow its children or ref types
+  // in JSX position, so it is cast to a component that accepts both.
+  // React 19 treats ref as an ordinary prop, which makes this safe.
+  const El = Tag as unknown as ComponentType<
     HTMLAttributes<HTMLElement> & { ref?: Ref<HTMLElement> }
   >;
 
   return (
-    <Element ref={ref} className={className}>
+    <El ref={ref} className={"reveal " + className}>
       {children}
-    </Element>
-  );
-}
-
-/**
- * Batched rise-in for anything that is not text.
- *
- * One ScrollTrigger per group rather than one per child — a grid of
- * twenty-four tiles should not install twenty-four scroll listeners.
- */
-export function RiseGroup({
-  children,
-  className,
-  selector = "[data-rise]",
-  stagger = 0.06,
-  y = 24,
-  immediate = false,
-}: {
-  children: ReactNode;
-  className?: string;
-  selector?: string;
-  stagger?: number;
-  y?: number;
-  immediate?: boolean;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    register();
-
-    const targets = el.querySelectorAll(selector);
-    if (!targets.length) return;
-
-    if (quality.reducedMotion) {
-      gsap.set(targets, { opacity: 1, y: 0 });
-      return;
-    }
-
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        targets,
-        { opacity: 0, y },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.95,
-          ease: "expo.out",
-          stagger: { each: stagger },
-          scrollTrigger: immediate
-            ? undefined
-            : { trigger: el, start: "top 86%", once: true },
-        },
-      );
-    }, el);
-
-    return () => ctx.revert();
-  }, [selector, stagger, y, immediate]);
-
-  return (
-    <div ref={ref} className={className}>
-      {children}
-    </div>
-  );
-}
-
-/**
- * Scroll-velocity skew.
- *
- * Leans its contents into the direction of travel and springs back when
- * you stop. Driven from the shared ticker and written straight to the
- * element, so it never re-renders and never allocates.
- */
-export function Skewed({
-  children,
-  className,
-  amount = 3.2,
-}: {
-  children: ReactNode;
-  className?: string;
-  amount?: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || quality.reducedMotion) return;
-
-    const set = gsap.quickSetter(el, "skewY", "deg");
-    let current = 0;
-
-    const tick = () => {
-      const target = gsap.utils.clamp(-amount, amount, scroll.velocity * 0.55);
-      current += (target - current) * 0.12;
-      set(current);
-    };
-
-    gsap.ticker.add(tick);
-    return () => {
-      gsap.ticker.remove(tick);
-      set(0);
-    };
-  }, [amount]);
-
-  return (
-    <div ref={ref} className={className} style={{ willChange: "transform" }}>
-      {children}
-    </div>
-  );
-}
-
-/**
- * Parallax layer. Offsets its contents against page scroll by a fraction
- * of the distance travelled.
- */
-export function Parallax({
-  children,
-  className,
-  speed = 0.12,
-}: {
-  children: ReactNode;
-  className?: string;
-  speed?: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || quality.reducedMotion) return;
-    register();
-
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        el,
-        { yPercent: -speed * 100 },
-        {
-          yPercent: speed * 100,
-          ease: "none",
-          scrollTrigger: {
-            trigger: el,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 0.6,
-          },
-        },
-      );
-    }, el);
-
-    return () => ctx.revert();
-  }, [speed]);
-
-  return (
-    <div ref={ref} className={className} style={{ willChange: "transform" }}>
-      {children}
-    </div>
+    </El>
   );
 }

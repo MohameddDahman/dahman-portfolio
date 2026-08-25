@@ -1,107 +1,93 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, JetBrains_Mono } from "next/font/google";
+import { ViewTransition } from "react";
+import { Archivo, Source_Serif_4, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 import { ConvexClientProvider } from "@/components/ui/ConvexClientProvider";
-import Scroll from "@/components/motion/Scroll";
-import Cursor from "@/components/motion/Cursor";
-import Warp from "@/components/motion/Warp";
-import Stage from "@/components/gl/Stage";
-import Hud from "@/components/ui/Hud";
-import Preloader from "@/components/ui/Preloader";
+import Nav from "@/components/ui/Nav";
 import Footer from "@/components/ui/Footer";
 
 /**
- * One grotesk does both display and body. Archivo carries a width axis
- * (62–125), which the scroll runtime narrows a little as you read down a
- * page; requesting the variable axis here is what makes that possible.
- *
- * Everything structural is set uppercase at weight 400 with positive
- * tracking — the hierarchy on this site comes from size and opacity, not
- * from weight.
+ * Sans display over serif body — a deliberate inversion of the usual
+ * pairing. A serif at 18px on white is simply the most readable thing to
+ * put under a paragraph, and readability is the entire brief here.
  */
 const display = Archivo({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-archivo",
   axes: ["wdth"],
   display: "swap",
 });
 
-const body = Archivo({
+const serif = Source_Serif_4({
   subsets: ["latin"],
-  variable: "--font-body",
-  axes: ["wdth"],
+  variable: "--font-serif",
+  axes: ["opsz"],
   display: "swap",
 });
 
-/** Carries every label, number and readout. */
+/** Labels, figures and data only. */
 const mono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-mono-face",
   weight: ["400", "500"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  // Set NEXT_PUBLIC_SITE_URL in the deployment environment so canonical
-  // and Open Graph URLs resolve absolutely. localhost is a dev fallback.
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
     default: "Mohamed Dahman — Frontend engineer",
     template: "%s — Mohamed Dahman",
   },
   description:
-    "Frontend engineer building interfaces that hold their frame under real data and real motion. Next.js, TypeScript, WebGL.",
+    "Frontend engineer building interfaces that hold up under real content. Next.js, TypeScript, and the unglamorous half of the job.",
   openGraph: {
     title: "Mohamed Dahman — Frontend engineer",
     description:
-      "Seven worlds, one portfolio. Frontend engineering, interface systems, motion and WebGL.",
+      "Frontend engineer building interfaces that hold up under real content.",
     type: "website",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0b10",
-  colorScheme: "dark",
+  themeColor: "#ffffff",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body className="bg-void text-white antialiased">
-        <Scroll />
-        <Cursor />
-
-        {/* One WebGL context for the whole site. It lives outside the warp
-            curtain, so the world swaps behind the cover and is never seen
-            being torn down. */}
-        <Stage />
-        <div aria-hidden className="vignette fixed inset-0 z-[1]" />
-
+    <html
+      lang="en"
+      className={`${display.variable} ${serif.variable} ${mono.variable}`}
+    >
+      <body className="bg-paper text-ink antialiased">
         <a
           href="#content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[400] focus: focus:border focus:border-white focus:bg-void focus:px-5 focus:py-2.5 focus:text-sm"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:border focus:border-ink focus:bg-paper focus:px-4 focus:py-3 focus:text-base"
         >
           Skip to content
         </a>
 
+        <Nav />
+
         <ConvexClientProvider>
-          <Hud />
+          {/* This wrapper is what starts a view transition on navigation
+              and forwards the type from the Link — measured: without it
+              document.startViewTransition is never called at all.
 
-          <div id="content" className="relative z-10">
-            {children}
-          </div>
-
+              It carries no enter/exit classes on purpose: <main> stays
+              mounted across a navigation, so React sees an update rather
+              than an enter/exit and never applies them. The animation is
+              driven from CSS off the root group and the active transition
+              type instead — see globals.css. */}
+          <ViewTransition>
+            <main id="content">{children}</main>
+          </ViewTransition>
           <Footer />
         </ConvexClientProvider>
-
-        {/* Above everything: the curtain that carries you between worlds. */}
-        <Warp />
-
-        {/* And above that, on first load only, the gate. */}
-        <Preloader />
       </body>
     </html>
   );

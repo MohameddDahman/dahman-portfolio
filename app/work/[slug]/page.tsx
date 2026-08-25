@@ -3,9 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PROJECTS, projectBySlug } from "@/data/projects";
-import { WORLDS } from "@/lib/worlds";
-import { SplitReveal, RiseGroup, Parallax } from "@/components/motion/Reveal";
-import Panel from "@/components/ui/Panel";
+import { Reveal } from "@/components/motion/Reveal";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -25,230 +23,175 @@ export default async function ProjectPage({ params }: Params) {
   const project = projectBySlug(slug);
   if (!project) notFound();
 
-  // Show the real hostname on the button. "Live ↗" says nothing about
-  // where it goes; the domain is the strongest signal that this leaves for
-  // the actual shipped site rather than another page of this one.
   const host = project.live ? new URL(project.live).host : null;
-
   const index = PROJECTS.findIndex((p) => p.slug === slug);
   const next = PROJECTS[(index + 1) % PROJECTS.length];
-  const world = WORLDS[project.world];
+  const facts = project.facts.filter(([, v]) => v.trim().length > 0);
 
   return (
-    <main>
-      <header className="shell pt-[24vh] md:pt-[27vh]">
-        <Link
-          href="/work"
-          data-cursor="Back"
-          className="t-label group inline-flex items-center gap-2 transition-colors duration-400 hover:text-white"
-        >
-          <span className="transition-transform duration-400 group-hover:-translate-x-1">←</span>
-          All work
-        </Link>
-
-        <div className="mt-8 flex flex-wrap items-center gap-4">
-          <span className="t-mono text-[11px]" style={{ color: "var(--accent)" }}>
-            {String(index + 1).padStart(2, "0")}
-          </span>
-          <span className="t-label">{project.role}</span>
-          <span className="h-3 w-px bg-w08" />
-          <span className="t-label">{project.year}</span>
-          <span className="h-3 w-px bg-w08" />
-          <span className="t-label">World · {world.name}</span>
-          {project.draft && (
-            <span className="border border-w20 px-2.5 py-1">
-              <span className="t-label text-[8px]">Placeholder entry</span>
-            </span>
-          )}
-        </div>
-
-        <SplitReveal
-          as="h1"
-          className="t-display mt-6 max-w-[14ch] text-[clamp(2.2rem,5.4vw,4rem)]"
-          immediate
-          stagger={0.085}
-        >
-          {project.title}
-        </SplitReveal>
-
-        {project.live && (
-          <a
-            href={project.live}
-            target="_blank"
-            rel="noreferrer noopener"
-            data-cursor="Live site"
-            className="group mt-9 inline-flex items-center gap-4 border border-white bg-white px-7 py-4 transition-colors duration-400 hover:bg-transparent"
+    <>
+      <header className="shell pb-12 pt-20 md:pt-28">
+        <Reveal>
+          <Link
+            href="/work"
+            className="link t-data"
+            transitionTypes={["close-project"]}
           >
-            <span className="t-label text-[10px] tracking-[0.24em] text-black transition-colors duration-300 group-hover:text-white">
-              Open the live site
-            </span>
-            <span className="t-mono text-[11px] text-black/55 transition-colors duration-300 group-hover:text-w60">
-              {host}
-            </span>
-            <span className="text-[13px] leading-none text-black transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white">
-              ↗
-            </span>
-          </a>
-        )}
+            ← All work
+          </Link>
+        </Reveal>
 
-        <div className="rule mt-10" />
+        <Reveal delay={60}>
+          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <span className="t-label">{project.role}</span>
+            <span className="t-label text-ink-3">{project.year}</span>
+            {project.draft && (
+              <span className="t-label border border-rule px-2 py-0.5 text-[0.6875rem] text-ink-3">
+                Write-up in progress
+              </span>
+            )}
+          </div>
+        </Reveal>
+
+        <h1 className="t-hero measure-wide mt-5">{project.title}</h1>
+        <p className="t-lead measure mt-6">{project.summary}</p>
+
+        {/* The primary action. Solid, 48px, and it names the domain —
+            "Live ↗" told the reader nothing about where it went. */}
+        {project.live && (
+          <Reveal delay={200}>
+            <a
+              href={project.live}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="btn mt-9"
+            >
+              Open the live site
+              <span className="font-normal normal-case tracking-normal opacity-70">
+                {host}
+              </span>
+              <span aria-hidden>↗</span>
+            </a>
+          </Reveal>
+        )}
       </header>
 
-      {/* ---- Outcomes ---------------------------------------------------
-          Only rendered when there is something real to put in it. A
-          results strip full of em-dashes is worse than no strip at all,
-          and a finished write-up can legitimately have no numbers yet. */}
-      {project.outcomes.length > 0 && (
-        <section className="shell py-[6vh]">
-          <RiseGroup className="grid grid-cols-1 gap-6 sm:grid-cols-3" stagger={0.08}>
-            {project.outcomes.map((o) => (
-              <div key={o.label} data-rise>
-                <div
-                  className="t-display text-[clamp(1.7rem,3vw,2.4rem)]"
-                  style={{ color: "var(--accent)" }}
-                >
-                  {o.value}
-                </div>
-                <div className="t-label mt-2 max-w-[22ch]">{o.label}</div>
-              </div>
-            ))}
-          </RiseGroup>
-        </section>
-      )}
-
-      {/* ---- Case study ------------------------------------------------- */}
-      <section className="shell grid gap-14 py-[6vh] lg:grid-cols-[1.25fr_0.75fr] lg:gap-20">
-        <div className="space-y-16">
-          {/* A draft shows an honest note instead of its scaffolding. The
-              project is real and belongs in the list; the write-up simply
-              is not finished, and saying so is better than printing the
-              prompts I left myself. */}
+      {/* ---- Case study ------------------------------------------------
+          One column at the reading measure. No sidebar competing with the
+          prose for attention while you are trying to read it. */}
+      <section className="rule-t">
+        <div className="shell py-16 md:py-20">
           {project.draft ? (
-            <div className="panel p-8 md:p-10">
-              <span className="t-label">Write-up in progress</span>
-              <p className="t-body mt-4 max-w-[52ch]">
-                The case study for this one is not written up yet. What is
-                here is accurate; there is just more of it to come.
-              </p>
-              <Link
-                href="/contact"
-                data-cursor="Ask"
-                className="t-label group mt-8 inline-flex items-center gap-2 transition-colors duration-400 hover:text-white"
-              >
-                Ask me about it directly
-                <span className="transition-transform duration-400 group-hover:translate-x-1">→</span>
-              </Link>
-            </div>
+            <Reveal>
+              <div className="card measure-wide p-8">
+                <h2 className="t-h3">The write-up isn&rsquo;t finished</h2>
+                <p className="mt-3 text-[1rem] leading-relaxed text-ink-2">
+                  What&rsquo;s here is accurate; there is just more of it to
+                  come. Happy to talk through the project in the meantime.
+                </p>
+                <Link href="/contact" className="link mt-6 inline-block">
+                  Ask me about it →
+                </Link>
+              </div>
+            </Reveal>
           ) : (
-          project.chapters.map((ch, ci) => (
-            <div key={ch.heading}>
-              <div className="mb-5 flex items-baseline gap-3">
-                <span className="t-mono text-[10px] text-w40">
-                  {String(ci + 1).padStart(2, "0")}
-                </span>
-                <h2 className="t-display text-[clamp(1.4rem,2.4vw,2rem)] text-white">
-                  {ch.heading}
-                </h2>
-              </div>
-              <div className="space-y-5">
-                {ch.body.map((p, i) => (
-                  <SplitReveal
-                    key={i}
-                    as="p"
-                    className="t-body max-w-[58ch] text-[15px]"
-                    stagger={0.04}
-                    immediate={ci === 0 && i === 0}
-                  >
-                    {p}
-                  </SplitReveal>
-                ))}
-              </div>
-            </div>
-          )))}
-        </div>
-
-        <aside>
-          <Parallax speed={0.05}>
-            <Panel className="p-7">
-              <dl className="relative">
-                {project.facts
-                  .filter(([, v]) => v.trim().length > 0)
-                  .map(([k, v]) => (
-                  <div
-                    key={k}
-                    className="flex items-baseline justify-between gap-6 border-b border-w08 py-3 last:border-0"
-                  >
-                    <dt className="t-label">{k}</dt>
-                    <dd className="t-mono text-[11px] text-w90">{v}</dd>
+            <div className="measure space-y-14">
+              {project.chapters.map((ch, ci) => (
+                <Reveal key={ch.heading} delay={ci * 40}>
+                  <h2 className="t-h3">{ch.heading}</h2>
+                  <div className="mt-4 space-y-5">
+                    {ch.body.map((p, i) => (
+                      <p key={i} className="text-[1.0625rem] leading-[1.7]">
+                        {p}
+                      </p>
+                    ))}
                   </div>
-                ))}
-              </dl>
+                </Reveal>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
-              {project.stack.length > 0 && (
-              <div className="relative mt-7">
-                <div className="t-label mb-3">Built with</div>
-                <ul className="flex flex-wrap gap-2">
-                  {project.stack.map((t) => (
-                    <li
-                      key={t}
-                      className="t-mono border border-w08 px-3 py-1.5 text-[10px] text-w40"
+      {/* ---- Facts ------------------------------------------------------ */}
+      <section className="rule-t bg-wash">
+        <div className="shell py-16">
+          <div className="grid gap-12 md:grid-cols-[1fr_1fr]">
+            {facts.length > 0 && (
+              <Reveal>
+                <h2 className="t-label">Details</h2>
+                <dl className="rule-t mt-5">
+                  {facts.map(([k, v]) => (
+                    <div
+                      key={k}
+                      className="rule-b flex flex-wrap items-baseline justify-between gap-4 py-3.5"
                     >
+                      <dt className="text-[0.95rem] text-ink-2">{k}</dt>
+                      <dd className="text-[0.95rem] text-ink">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </Reveal>
+            )}
+
+            {project.stack.length > 0 && (
+              <Reveal delay={60}>
+                <h2 className="t-label">Built with</h2>
+                <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-3">
+                  {project.stack.map((t) => (
+                    <li key={t} className="text-[1.05rem] text-ink">
                       {t}
                     </li>
                   ))}
                 </ul>
-              </div>
-              )}
 
-              {(project.live || project.source) && (
-                <div className="relative mt-7">
-                  <div className="t-label mb-3">Links</div>
-                  <div className="flex flex-wrap gap-2">
-                  {project.live && (
-                    <a
-                      href={project.live}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      data-cursor="Live site"
-                      className="t-label border border-w20 px-4 py-2 transition-colors duration-400 hover:border-white hover:text-white"
-                    >
-                      Open live site ↗
-                    </a>
-                  )}
-                  {project.source && (
-                    <a
-                      href={project.source}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      data-cursor="Source"
-                      className="t-label border border-w20 px-4 py-2 transition-colors duration-400 hover:border-white hover:text-white"
-                    >
-                      Source code ↗
-                    </a>
-                  )}
+                {(project.live || project.source) && (
+                  <div className="mt-10 flex flex-wrap gap-3">
+                    {project.live && (
+                      <a
+                        href={project.live}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="btn btn-quiet"
+                      >
+                        Open live site <span aria-hidden>↗</span>
+                      </a>
+                    )}
+                    {project.source && (
+                      <a
+                        href={project.source}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="btn btn-quiet"
+                      >
+                        Source code <span aria-hidden>↗</span>
+                      </a>
+                    )}
                   </div>
-                </div>
-              )}
-            </Panel>
-          </Parallax>
-        </aside>
+                )}
+              </Reveal>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* ---- Next ------------------------------------------------------- */}
-      <section className="shell py-[12vh]">
-        <div className="rule mb-8" />
-        <span className="t-label">Next</span>
-
-        <Link href={"/work/" + next.slug} data-cursor="Next" className="group mt-6 block">
-          <h2 className="t-display text-[clamp(1.6rem,3.6vw,2.6rem)] text-w40 transition-colors duration-500 group-hover:text-white">
-            {next.title}
-          </h2>
-          <span
-            className="mt-6 block h-px w-full origin-left scale-x-[0.04] transition-transform duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
-            style={{ background: "var(--accent)" }}
-          />
-        </Link>
+      <section className="rule-t">
+        <div className="shell py-16">
+          <Reveal>
+            <p className="t-label">Next project</p>
+            <Link href={"/work/" + next.slug} className="group mt-4 block">
+              <h2 className="t-h2 transition-colors duration-200">
+                {next.title}
+              </h2>
+              <p className="measure mt-2 text-[1rem] text-ink-2">
+                {next.summary}
+              </p>
+              <span className="link t-data mt-5 inline-block">Read it →</span>
+            </Link>
+          </Reveal>
+        </div>
       </section>
-    </main>
+    </>
   );
 }

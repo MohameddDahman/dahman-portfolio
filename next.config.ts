@@ -1,10 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* Navigation is staged by hand (see components/motion/Warp.tsx) rather
-     than by the browser's view-transition API — the curtain needs to know
-     the destination world in order to paint itself in its colour, which a
-     crossfade cannot express. */
+  experimental: {
+    /* React's <ViewTransition> drives the page transitions. The browser
+       composites them, so they cost no main-thread work — which is the
+       only reason motion belongs on a site rebuilt for legibility. */
+    viewTransition: true,
+  },
 };
 
 export default nextConfig;

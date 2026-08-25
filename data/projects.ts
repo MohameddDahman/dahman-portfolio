@@ -1,5 +1,3 @@
-import type { WorldId } from "@/lib/worlds";
-
 /**
  * ---------------------------------------------------------------------
  *  Projects.
@@ -16,9 +14,6 @@ import type { WorldId } from "@/lib/worlds";
  *  any results. I could not know those. Add them and the entries get
  *  stronger; the outcomes strip stays hidden until `outcomes` has
  *  something in it.
- *
- *  `world` picks which of the seven 3D environments stands behind the
- *  project's page — see lib/worlds.ts.
  * ---------------------------------------------------------------------
  */
 export type Project = {
@@ -28,8 +23,6 @@ export type Project = {
   year: string;
   /** One line. Used on the rail and the index. */
   summary: string;
-  /** The environment behind this project's page. */
-  world: WorldId;
   /** Long-form case study, in order. */
   chapters: { heading: string; body: string[] }[];
   stack: string[];
@@ -50,7 +43,6 @@ export const PROJECTS: Project[] = [
     title: "Jamora Vibes",
     role: "Online store",
     year: "2025", // TODO: confirm
-    world: "tide",
     summary:
       "An instrument shop where every listing has a recording of that exact instrument.",
     chapters: [
@@ -96,7 +88,6 @@ export const PROJECTS: Project[] = [
     title: "Reem Store",
     role: "E-commerce storefront",
     year: "2025", // TODO: confirm
-    world: "lattice",
     summary:
       "A bilingual Egyptian care storefront — English and Arabic, with the whole layout mirrored.",
     chapters: [
@@ -145,7 +136,6 @@ export const PROJECTS: Project[] = [
     title: "Third project",
     role: "Interface systems",
     year: "2025",
-    world: "prism",
     summary: "If it was a client build, say what they needed and what changed.",
     chapters: [
       {
@@ -187,7 +177,6 @@ export const PROJECTS: Project[] = [
     title: "Fourth project",
     role: "Motion & WebGL",
     year: "2024",
-    world: "bloom",
     summary: "Experiments belong here too. They show range.",
     chapters: [
       {
@@ -227,7 +216,6 @@ export const PROJECTS: Project[] = [
     title: "Fifth project",
     role: "Performance",
     year: "2024",
-    world: "orbit",
     summary: "A before and after number is worth a paragraph of adjectives.",
     chapters: [
       {
@@ -267,7 +255,6 @@ export const PROJECTS: Project[] = [
     title: "Sixth project",
     role: "Full build",
     year: "2024",
-    world: "neon",
     summary: "Keep the oldest entry short. It is here for shape, not detail.",
     chapters: [
       {
